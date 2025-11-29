@@ -141,3 +141,28 @@ async def list_feeds():
             "total": len(feed_list),
             "feeds": feed_list
         }
+
+
+@router.post("/process-feeds")
+async def process_feeds_manually(limit_feeds: int = 5, limit_items: int = 5):
+    """
+    Manually trigger feed processing (for testing).
+    
+    Args:
+        limit_feeds: Number of feeds to process (default: 5 for testing)
+        limit_items: Items per feed (default: 5 for testing)
+    """
+    from services.scheduler import ProcessingService
+    
+    try:
+        await ProcessingService.run_daily_processing(
+            limit_feeds=limit_feeds,
+            limit_items_per_feed=limit_items
+        )
+        
+        return JSONResponse({
+            "status": "success",
+            "message": f"Processed up to {limit_feeds} feeds with {limit_items} items each"
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
