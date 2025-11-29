@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Feeds - Eratosthenes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: #f1f5f9;
+        }
+        .stats {
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+        .nav {
+            margin-bottom: 30px;
+        }
+        .nav a {
+            color: #60a5fa;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            background: #334155;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+        td {
+            padding: 15px;
+            border-top: 1px solid #334155;
+        }
+        tr:hover {
+            background: #293548;
+        }
+        .feed-url {
+            color: #94a3b8;
+            font-size: 0.9em;
+            word-break: break-all;
+        }
+        .btn-delete {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .btn-delete:hover {
+            background: #b91c1c;
+        }
+        .enabled {
+            color: #10b981;
+        }
+        .disabled {
+            color: #6b7280;
+        }
+        .message {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            display: none;
+        }
+        .message.success {
+            background: #064e3b;
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+        .message.error {
+            background: #7f1d1d;
+            border: 1px solid #dc2626;
+            color: #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage RSS Feeds</h1>
+        <p class="stats">Total Feeds: {{ total_feeds }}</p>
+
+        <div class="nav">
+            <a href="/">← Back to Dashboard</a>
+        </div>
+
+        <div id="message" class="message"></div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Feed URL</th>
+                    <th>Status</th>
+                    <th>Last Fetched</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for feed in feeds %}
+                <tr id="feed-{{ feed.id }}">
+                    <td>{{ feed.id }}</td>
+                    <td>{{ feed.name }}</td>
+                    <td class="feed-url">{{ feed.feed_url }}</td>
+                    <td>
+                        {% if feed.enabled %}
+                        <span class="enabled">●</span> Enabled
+                        {% else %}
+                        <span class="disabled">●</span> Disabled
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if feed.last_fetched %}
+                        {{ feed.last_fetched.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                        Never
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn-delete" onclick="deleteFeed({{ feed.id }}, '{{ feed.name }}')">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function deleteFeed(feedId, feedName) {
+            if (!confirm(`Are you sure you want to delete "${feedName}"?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/feeds/${feedId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    // Remove row from table
+                    const row = document.getElementById(`feed-${feedId}`);
+                    row.remove();
+
+                    // Show success message
+                    showMessage(`Successfully deleted "${feedName}"`, 'success');
+
+                    // Update count
+                    const currentCount = parseInt(document.querySelector('.stats').textContent.match(/\d+/)[0]);
+                    document.querySelector('.stats').textContent = `Total Feeds: ${currentCount - 1}`;
+                } else {
+                    const error = await response.json();
+                    showMessage(`Error: ${error.detail}`, 'error');
+                }
+            } catch (error) {
+                showMessage(`Error: ${error.message}`, 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

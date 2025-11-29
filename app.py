@@ -15,6 +15,7 @@ from models.database import init_db, get_db_session
 from routes.dashboard import router as dashboard_router
 from routes.review import router as review_router
 from routes.feeds import router as feeds_router
+from routes.feeds_manage import router as feeds_manage_router
 from routes.api import router as api_router
 from services.scheduler import ProcessingService
 
@@ -70,6 +71,7 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(dashboard_router)
 app.include_router(review_router)
 app.include_router(feeds_router)
+app.include_router(feeds_manage_router)
 app.include_router(api_router, prefix="/api")
 
 @app.get("/health")
