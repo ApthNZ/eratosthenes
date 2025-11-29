@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import Response
 from sqlalchemy import select
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from feedgen.feed import FeedGenerator
 
 from models.database import async_session_maker
@@ -40,7 +40,9 @@ async def standard_feed():
             fe.title(item.title)
             fe.link(href=item.url)
             fe.description(item.summary or item.content or '')
-            fe.pubDate(item.published_date)
+            # Make datetime timezone-aware (UTC)
+            pub_date = item.published_date.replace(tzinfo=timezone.utc) if item.published_date else datetime.now(timezone.utc)
+            fe.pubDate(pub_date)
         
         rss_str = fg.rss_str(pretty=True)
         return Response(content=rss_str, media_type="application/rss+xml")
@@ -76,7 +78,9 @@ async def priority_feed():
             fe.title(item.title)
             fe.link(href=item.url)
             fe.description(item.summary or item.content or '')
-            fe.pubDate(item.published_date)
+            # Make datetime timezone-aware (UTC)
+            pub_date = item.published_date.replace(tzinfo=timezone.utc) if item.published_date else datetime.now(timezone.utc)
+            fe.pubDate(pub_date)
         
         rss_str = fg.rss_str(pretty=True)
         return Response(content=rss_str, media_type="application/rss+xml")
