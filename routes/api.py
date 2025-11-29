@@ -167,3 +167,24 @@ async def process_feeds_manually(limit_feeds: int = 5, limit_items: int = 5, use
         })
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
+
+@router.delete("/feeds/{feed_id}")
+async def delete_feed(feed_id: int, username: str = Depends(verify_credentials)):
+    """Delete a feed source by ID."""
+    async with async_session_maker() as session:
+        result = await session.execute(
+            select(FeedSource).where(FeedSource.id == feed_id)
+        )
+        feed = result.scalar_one_or_none()
+        
+        if not feed:
+            raise HTTPException(status_code=404, detail="Feed not found")
+        
+        await session.delete(feed)
+        await session.commit()
+        
+        return JSONResponse({
+            "status": "deleted",
+            "feed_id": feed_id,
+            "name": feed.name
+        })
