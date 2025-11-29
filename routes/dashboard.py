@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func
 from datetime import datetime, timedelta
 
-from models.database import get_db_session
+from models.database import async_session_maker
 from models.feed_item import FeedItem
 from models.processing_log import ProcessingLog
 
@@ -14,7 +14,7 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Dashboard homepage with processing stats."""
-    async with get_db_session() as session:
+    async with async_session_maker() as session:
         # Get today's date
         today = datetime.utcnow().date()
         
