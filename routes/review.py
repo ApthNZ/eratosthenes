@@ -4,7 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, update
 from datetime import datetime
 
-from models.database import get_db_session
+from models.database import async_session_maker
 from models.feed_item import FeedItem
 
 router = APIRouter()
@@ -13,7 +13,7 @@ templates = Jinja2Templates(directory="templates")
 @router.get("/review", response_class=HTMLResponse)
 async def review_queue(request: Request, page: int = 1, limit: int = 20):
     """Priority review queue interface."""
-    async with get_db_session() as session:
+    async with async_session_maker() as session:
         # Get pending priority suggestions
         offset = (page - 1) * limit
         result = await session.execute(
@@ -41,7 +41,7 @@ async def review_queue(request: Request, page: int = 1, limit: int = 20):
 @router.post("/review/{item_id}/approve")
 async def approve_priority(item_id: int):
     """Approve a priority suggestion."""
-    async with get_db_session() as session:
+    async with async_session_maker() as session:
         result = await session.execute(
             select(FeedItem).where(FeedItem.id == item_id)
         )
@@ -62,7 +62,7 @@ async def approve_priority(item_id: int):
 @router.post("/review/{item_id}/reject")
 async def reject_priority(item_id: int):
     """Reject a priority suggestion."""
-    async with get_db_session() as session:
+    async with async_session_maker() as session:
         result = await session.execute(
             select(FeedItem).where(FeedItem.id == item_id)
         )
