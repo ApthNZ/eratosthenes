@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from models.database import get_db_session
+from models.database import async_session_maker
 from models.processing_log import ProcessingLog
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class ProcessingService:
         logger.info(f"Starting daily processing at {datetime.utcnow()}")
         logger.info("=" * 70)
         
-        async with get_db_session() as session:
+        async with async_session_maker() as session:
             today = datetime.utcnow().date()
             
             # Create processing log entry
