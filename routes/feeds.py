@@ -4,7 +4,7 @@ from sqlalchemy import select
 from datetime import datetime, timedelta
 from feedgen.feed import FeedGenerator
 
-from models.database import get_db_session
+from models.database import async_session_maker
 from models.feed_item import FeedItem
 
 router = APIRouter()
@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/feeds/standard.xml")
 async def standard_feed():
     """Standard RSS feed (all relevant items)."""
-    async with get_db_session() as session:
+    async with async_session_maker() as session:
         # Get relevant items from last 30 days
         cutoff_date = datetime.utcnow() - timedelta(days=30)
         result = await session.execute(
@@ -48,7 +48,7 @@ async def standard_feed():
 @router.get("/feeds/priority.xml")
 async def priority_feed():
     """Priority RSS feed (approved items only)."""
-    async with get_db_session() as session:
+    async with async_session_maker() as session:
         # Get approved priority items from last 30 days
         cutoff_date = datetime.utcnow() - timedelta(days=30)
         result = await session.execute(
