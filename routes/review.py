@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, update
@@ -6,12 +6,13 @@ from datetime import datetime
 
 from models.database import async_session_maker
 from models.feed_item import FeedItem
+from auth import verify_credentials
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/review", response_class=HTMLResponse)
-async def review_queue(request: Request, page: int = 1, limit: int = 20):
+async def review_queue(request: Request, page: int = 1, limit: int = 20, username: str = Depends(verify_credentials)):
     """Priority review queue interface."""
     async with async_session_maker() as session:
         # Get pending priority suggestions
@@ -39,7 +40,7 @@ async def review_queue(request: Request, page: int = 1, limit: int = 20):
         )
 
 @router.post("/review/{item_id}/approve")
-async def approve_priority(item_id: int):
+async def approve_priority(item_id: int, username: str = Depends(verify_credentials)):
     """Approve a priority suggestion."""
     async with async_session_maker() as session:
         result = await session.execute(
@@ -60,7 +61,7 @@ async def approve_priority(item_id: int):
         return JSONResponse({"status": "approved", "item_id": item_id})
 
 @router.post("/review/{item_id}/reject")
-async def reject_priority(item_id: int):
+async def reject_priority(item_id: int, username: str = Depends(verify_credentials)):
     """Reject a priority suggestion."""
     async with async_session_maker() as session:
         result = await session.execute(

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select, func
@@ -7,12 +7,13 @@ from datetime import datetime, timedelta
 from models.database import async_session_maker
 from models.feed_item import FeedItem
 from models.processing_log import ProcessingLog
+from auth import verify_credentials
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request):
+async def dashboard(request: Request, username: str = Depends(verify_credentials)):
     """Dashboard homepage with processing stats."""
     async with async_session_maker() as session:
         # Get today's date

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy import select, func
 from datetime import datetime
@@ -9,11 +9,12 @@ from models.database import async_session_maker
 from models.feed_item import FeedItem
 from models.feed_source import FeedSource
 from models.processing_log import ProcessingLog
+from auth import verify_credentials
 
 router = APIRouter()
 
 @router.get("/stats")
-async def get_stats():
+async def get_stats(username: str = Depends(verify_credentials)):
     """JSON endpoint for processing statistics."""
     async with async_session_maker() as session:
         # Get today's date
@@ -58,7 +59,7 @@ async def get_stats():
 
 
 @router.post("/import-feeds")
-async def import_feeds_from_opml():
+async def import_feeds_from_opml(username: str = Depends(verify_credentials)):
     """Import RSS feeds from OPML file into database."""
     opml_file = "seeds/feeds.opml"
     
@@ -118,7 +119,7 @@ async def import_feeds_from_opml():
 
 
 @router.get("/feeds")
-async def list_feeds():
+async def list_feeds(username: str = Depends(verify_credentials)):
     """List all feed sources in the database."""
     async with async_session_maker() as session:
         result = await session.execute(
@@ -144,7 +145,7 @@ async def list_feeds():
 
 
 @router.post("/process-feeds")
-async def process_feeds_manually(limit_feeds: int = 5, limit_items: int = 5):
+async def process_feeds_manually(limit_feeds: int = 5, limit_items: int = 5, username: str = Depends(verify_credentials)):
     """
     Manually trigger feed processing (for testing).
     
