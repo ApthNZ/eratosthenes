@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from sqlalchemy import select, func
 from datetime import datetime
 
-from models.database import get_db_session
+from models.database import async_session_maker
 from models.feed_item import FeedItem
 from models.processing_log import ProcessingLog
 
@@ -11,7 +11,7 @@ router = APIRouter()
 @router.get("/stats")
 async def get_stats():
     """JSON endpoint for processing statistics."""
-    async with get_db_session() as session:
+    async with async_session_maker() as session:
         # Get today's date
         today = datetime.utcnow().date()
         
