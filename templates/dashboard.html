@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Eratosthenes - Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        h1 { color: #333; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 30px 0; }
+        .stat-card { background: #e3f2fd; padding: 20px; border-radius: 8px; text-align: center; }
+        .stat-value { font-size: 32px; font-weight: bold; color: #1976d2; }
+        .stat-label { font-size: 14px; color: #666; margin-top: 8px; }
+        .nav { margin: 20px 0; }
+        .nav a { margin-right: 20px; color: #1976d2; text-decoration: none; }
+        .nav a:hover { text-decoration: underline; }
+        .logs { margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f5f5f5; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Eratosthenes - InfoSec Feed Aggregator</h1>
+        
+        <div class="nav">
+            <a href="/">Dashboard</a>
+            <a href="/review">Review Queue</a>
+            <a href="/feeds/standard.xml">Standard Feed</a>
+            <a href="/feeds/priority.xml">Priority Feed</a>
+            <a href="/api/stats">API Stats</a>
+        </div>
+        
+        <h2>Today's Processing</h2>
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.today.feeds_processed }}</div>
+                <div class="stat-label">Feeds Processed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.today.items_fetched }}</div>
+                <div class="stat-label">Items Fetched</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.today.items_relevant }}</div>
+                <div class="stat-label">Items Relevant</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ stats.pending_review }}</div>
+                <div class="stat-label">Pending Review</div>
+            </div>
+        </div>
+        
+        <div class="logs">
+            <h2>Recent Processing Logs</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Feeds</th>
+                        <th>Items</th>
+                        <th>Relevant</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in stats.recent_logs %}
+                    <tr>
+                        <td>{{ log.run_date }}</td>
+                        <td>{{ log.feeds_processed }}</td>
+                        <td>{{ log.items_fetched }}</td>
+                        <td>{{ log.items_relevant }}</td>
+                        <td>{{ log.status }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
