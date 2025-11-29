@@ -33,18 +33,36 @@ class ProcessingService:
         async with async_session_maker() as session:
             today = datetime.utcnow().date()
 
-            # Create processing log entry
-            log = ProcessingLog(
-                run_date=today,
-                started_at=datetime.utcnow(),
-                status='running',
-                feeds_processed=0,
-                items_fetched=0,
-                items_relevant=0,
-                items_priority_suggested=0,
-                api_calls_made=0
+            # Get or create processing log entry for today
+            result = await session.execute(
+                select(ProcessingLog).where(ProcessingLog.run_date == today)
             )
-            session.add(log)
+            log = result.scalar_one_or_none()
+
+            if log:
+                # Update existing log
+                log.started_at = datetime.utcnow()
+                log.status = 'running'
+                log.feeds_processed = 0
+                log.items_fetched = 0
+                log.items_relevant = 0
+                log.items_priority_suggested = 0
+                log.api_calls_made = 0
+                log.error_message = None
+            else:
+                # Create new log entry
+                log = ProcessingLog(
+                    run_date=today,
+                    started_at=datetime.utcnow(),
+                    status='running',
+                    feeds_processed=0,
+                    items_fetched=0,
+                    items_relevant=0,
+                    items_priority_suggested=0,
+                    api_calls_made=0
+                )
+                session.add(log)
+
             await session.commit()
 
             try:
