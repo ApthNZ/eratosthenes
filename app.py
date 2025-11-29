@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database initialized")
     
-    # Start scheduler
+    # Start scheduler for daily processing
     nz_tz = pytz.timezone('Pacific/Auckland')
     scheduler.add_job(
         ProcessingService.run_daily_processing,
